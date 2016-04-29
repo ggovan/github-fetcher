@@ -6,9 +6,13 @@ var WebHDFS = require('webhdfs');
 
 var token = process.env.GITHUB_TOKEN;
 if(!token){
-  console.error("GITHUB_TOKEN environment variable must be set!")
-  throw new Error("Invalid configuration.")
+  console.warn("No GITHUB_TOKEN environment variable set, likely to exceed request limits!")
+  console.warn("This is not advised!.")
 }
+
+var bufferSize = process.env.GITHUB_FETCHER_BUFFER_SIZE;
+if(!(bufferSize > 0))
+  bufferSize = 1000;
 
 var accessToken = "access_token=" + token;
 
@@ -68,14 +72,14 @@ var commitBuffer = [];
 
 function addEvent(event){
     eventBuffer.push(event);
-    if(eventBuffer.length >= 1000){
+    if(eventBuffer.length >= bufferSize){
       flushEventBuffer();
     }
 }
 
 function saveCommit(commit){
   commitBuffer.push(commit);
-  if(commitBuffer.length >= 1000){
+  if(commitBuffer.length >= bufferSize){
     flushCommitBuffer();
   }
 }
